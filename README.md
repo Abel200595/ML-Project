@@ -1,6 +1,6 @@
 # Interactive PCA Image Compression Explorer
 
-## Project Overview
+
 
 This project is a course final project that demonstrates how **Principal Component Analysis (PCA)** can be used for **image compression and reconstruction**. The system is built around a local **Streamlit** app so users can interactively choose the number of principal components, browse Fashion-MNIST samples, compare original and reconstructed images, and observe how explained variance changes as the compression dimension changes.
 
