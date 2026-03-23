@@ -1,0 +1,6 @@
+numpy
+matplotlib
+streamlit
+torch
+torchvision
+pytest
