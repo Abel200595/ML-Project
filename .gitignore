@@ -1,0 +1,35 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Streamlit (do not commit secrets)
+.streamlit/secrets.toml
+
+# Dataset & caches (downloaded or generated; large)
+data/*
+!data/.gitkeep

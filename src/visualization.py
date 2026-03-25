@@ -9,18 +9,34 @@ import numpy as np
 def plot_original_vs_reconstructed(
     original_image: np.ndarray,
     reconstructed_image: np.ndarray,
-    mse: float,
     class_name: str | None = None,
+    display_scale: float = 1.0,
+    baseline_image: np.ndarray | None = None,
+    baseline_label: str = "JPEG (same ratio)",
+    pca_ratio: float | None = None,
+    baseline_ratio: float | None = None,
 ):
-    """Create a side-by-side comparison figure for one sample image."""
+    """Create a comparison figure for original, PCA, and optional baseline."""
 
-    fig, axes = plt.subplots(1, 2, figsize=(6, 3.4))
+    # Keep a compact default and allow UI to tune figure size dynamically.
+    base_width, base_height = 3.6, 2.2
+    figure_scale = float(np.clip(display_scale, 0.5, 2.0))
+    n_cols = 3 if baseline_image is not None else 2
+    fig, axes = plt.subplots(
+        1,
+        n_cols,
+        figsize=(base_width * n_cols / 2.0 * figure_scale, base_height * figure_scale),
+    )
+    if n_cols == 2:
+        axes = np.asarray(axes)
+
+    is_grayscale = original_image.ndim == 2
 
     axes[0].imshow(
         original_image,
-        cmap="gray",
-        vmin=0.0,
-        vmax=1.0,
+        cmap="gray" if is_grayscale else None,
+        vmin=0.0 if is_grayscale else None,
+        vmax=1.0 if is_grayscale else None,
         interpolation="nearest",
     )
     axes[0].set_title("Original Image")
@@ -28,13 +44,46 @@ def plot_original_vs_reconstructed(
 
     axes[1].imshow(
         reconstructed_image,
-        cmap="gray",
-        vmin=0.0,
-        vmax=1.0,
+        cmap="gray" if is_grayscale else None,
+        vmin=0.0 if is_grayscale else None,
+        vmax=1.0 if is_grayscale else None,
         interpolation="nearest",
     )
-    axes[1].set_title(f"Reconstructed Image\nMSE = {mse:.6f}")
+    axes[1].set_title("PCA Reconstructed")
     axes[1].axis("off")
+    if pca_ratio is not None:
+        axes[1].text(
+            0.5,
+            -0.12,
+            f"PCA Compression Ratio: {pca_ratio:.2f}x",
+            transform=axes[1].transAxes,
+            ha="center",
+            va="top",
+            fontsize=8,
+            fontweight="normal",
+        )
+
+    if baseline_image is not None:
+        axes[2].imshow(
+            baseline_image,
+            cmap="gray" if is_grayscale else None,
+            vmin=0.0 if is_grayscale else None,
+            vmax=1.0 if is_grayscale else None,
+            interpolation="nearest",
+        )
+        axes[2].set_title(baseline_label)
+        axes[2].axis("off")
+        if baseline_ratio is not None:
+            axes[2].text(
+                0.5,
+                -0.12,
+                f"JPEG Compression Ratio: {baseline_ratio:.2f}x",
+                transform=axes[2].transAxes,
+                ha="center",
+                va="top",
+                fontsize=8,
+                fontweight="normal",
+            )
 
     if class_name:
         fig.suptitle(f"Sample Class: {class_name}", fontsize=12)

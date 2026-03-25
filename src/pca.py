@@ -6,15 +6,15 @@ import numpy as np
 
 
 class PCA:
-    """Principal Component Analysis implemented with eigen-decomposition.
+    """Principal Component Analysis implemented with SVD.
 
     This class follows the standard PCA pipeline used in many textbooks:
 
     1. Compute the feature-wise mean of the data matrix ``X``.
     2. Center the data by subtracting the mean.
-    3. Compute the covariance matrix ``C = (1 / N) * X_centered.T @ X_centered``.
-    4. Perform eigen-decomposition on the covariance matrix.
-    5. Sort eigenvalues/eigenvectors from large to small.
+    3. Apply singular value decomposition (SVD) on centered data.
+    4. Convert singular values to explained variance.
+    5. Keep principal directions sorted by importance.
     6. Keep the top ``k`` eigenvectors as principal components.
     7. Project samples to the low-dimensional space.
     8. Reconstruct samples from the projected representation.
@@ -77,19 +77,11 @@ class PCA:
         # Step 2: center the data, shape (N, d)
         X_centered = X - self.mean_
 
-        # Step 3: compute the covariance matrix, shape (d, d)
-        covariance_matrix = (X_centered.T @ X_centered) / num_samples
-
-        # Step 4: eigendecompose the symmetric covariance matrix
-        eigenvalues, eigenvectors = np.linalg.eigh(covariance_matrix)
-
-        # Step 5: sort from large to small
-        sorted_indices = np.argsort(eigenvalues)[::-1]
-        eigenvalues = eigenvalues[sorted_indices]
-        eigenvectors = eigenvectors[:, sorted_indices]
-
-        # Numerical precision can produce tiny negative values near zero.
-        eigenvalues = np.clip(eigenvalues, a_min=0.0, a_max=None)
+        # Step 3/4: use SVD directly for better performance when d is large.
+        # X_centered = U S V^T, where columns of V are principal directions.
+        _, singular_values, right_vectors_t = np.linalg.svd(X_centered, full_matrices=False)
+        eigenvectors = right_vectors_t.T
+        eigenvalues = (singular_values**2) / num_samples
 
         total_variance = float(np.sum(eigenvalues))
         if total_variance == 0.0:
@@ -105,7 +97,8 @@ class PCA:
         self.cumulative_explained_variance_ratio_ = np.cumsum(all_explained_variance_ratio)
 
         # Step 6: keep the top k eigenvectors
-        self.n_components_ = self._resolve_n_components(num_features)
+        available_components = self.all_components_.shape[1]
+        self.n_components_ = self._resolve_n_components(available_components)
         self.components_ = self.all_components_[:, : self.n_components_]
         self.explained_variance_ = self.all_explained_variance_[: self.n_components_]
         self.explained_variance_ratio_ = self.all_explained_variance_ratio_[: self.n_components_]

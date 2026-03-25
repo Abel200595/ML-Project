@@ -56,6 +56,7 @@ This makes PCA a strong fit for a course project because the method is mathemati
 ```text
 project/
 ├── app.py
+├── run_app.sh
 ├── README.md
 ├── requirements.txt
 ├── plan1.md
@@ -84,17 +85,28 @@ project/
 
 ## Installation
 
-It is recommended to use a virtual environment first.
+Use the project virtual environment so `torch` / `torchvision` (needed for dataset download) match the same Python that runs Streamlit:
 
 ```bash
-pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
 ```
 
 ## Run the App
 
+**Recommended** (always uses `.venv`):
+
 ```bash
-streamlit run app.py
+./run_app.sh
 ```
+
+Or explicitly:
+
+```bash
+.venv/bin/streamlit run app.py
+```
+
+Avoid running plain `streamlit run app.py` if your shell’s `streamlit` points at another Python (for example Conda) that does not have `torchvision` installed.
 
 After the command starts, Streamlit will open a local browser page. On first run, the app may take a bit longer because Fashion-MNIST will be downloaded automatically into `data/`.
 
